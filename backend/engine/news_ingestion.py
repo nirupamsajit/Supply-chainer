@@ -42,10 +42,14 @@ class DynamicNewsIngestor:
             encoded_query = urllib.parse.quote(query)
             rss_url = f"https://news.google.com/rss/search?q={encoded_query}&hl=en-US&gl=US&ceid=US:en"
             
-            # Set a hard timeout for the socket
-            socket.setdefaulttimeout(2.0)
-            
-            feed = feedparser.parse(rss_url)
+            import urllib.request
+            req = urllib.request.Request(
+                rss_url,
+                headers={"User-Agent": "Mozilla/5.0"}
+            )
+            with urllib.request.urlopen(req, timeout=2.0) as resp:
+                xml_data = resp.read()
+            feed = feedparser.parse(xml_data)
             
             if feed.entries:
                 top_headlines = [entry.title for entry in feed.entries[:3]]

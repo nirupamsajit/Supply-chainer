@@ -18,19 +18,6 @@ WEATHER_SEVERITY_MAPPING = {
 
 import requests
 
-WEATHER_SEVERITY_MAPPING = {
-    "clear": 0.0,
-    "clouds": 0.1,
-    "mist": 0.2,
-    "drizzle": 0.3,
-    "fog": 0.4,
-    "rain": 0.5,
-    "snow": 0.6,
-    "heavy_rain": 0.7,
-    "thunderstorm": 0.9,
-    "extreme": 1.0
-}
-
 # Mapping Open-Meteo WMO codes to severity
 WMO_SEVERITY_MAPPING = {
     0: 0.0,    # Clear sky

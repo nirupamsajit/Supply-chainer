@@ -40,12 +40,13 @@
   "London": {
     "air": "AIR-HEATHROW",
     "road": "AIR-HEATHROW",
-    "rail": "AIR-HEATHROW"
+    "rail": "AIR-HEATHROW",
+    "sea": "PORT-FELIXSTOWE"
   },
   "Chicago": {
     "air": "AIR-CHICAGO",
     "rail": "RAIL-CHICAGO",
-    "road": "RAIL-CHICAGO"
+    "road": "HUB-CHICAGO"
   },
   "San Francisco": {
     "air": "AIR-SFO",

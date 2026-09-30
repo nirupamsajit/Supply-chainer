@@ -1,7 +1,10 @@
 import numpy as np
 import joblib
 import os
-import torch
+try:
+    import torch
+except ImportError:
+    torch = None
 import json
 import time
 from typing import List, Dict, Any, Optional, Tuple
@@ -44,9 +47,20 @@ class ThreatIntelligencePredictor:
             return
             
         # 1. Load ML Core
-        self.model = joblib.load(MODEL_PATH)
-        self.encoders = joblib.load(ENCODER_PATH)
-        self.is_trained = True
+        try:
+            import sys
+            try:
+                import sklearn._loss._loss
+                if '_loss' not in sys.modules:
+                    sys.modules['_loss'] = sklearn._loss._loss
+            except Exception:
+                pass
+            self.model = joblib.load(MODEL_PATH)
+            self.encoders = joblib.load(ENCODER_PATH)
+            self.is_trained = True
+        except Exception as e:
+            print(f"[PREDICTOR] Model load error: {e}. Running in deterministic fallback mode.")
+            self.is_trained = False
         
         # 2. Load Statistically Defensible Calibration Profiles
         if os.path.exists(CALIBRATION_PATH):
@@ -153,7 +167,7 @@ class ContrastiveNLPEngine:
             from sentence_transformers import SentenceTransformer, util
             self.model = SentenceTransformer("all-MiniLM-L6-v2")
             self.util = util
-            if os.path.exists(NLP_ANCHORS_PATH):
+            if torch is not None and os.path.exists(NLP_ANCHORS_PATH):
                 anchors = torch.load(NLP_ANCHORS_PATH)
                 self.disaster_matrix = anchors["disaster_matrix"]
                 self.safe_matrix = anchors["safe_matrix"]
@@ -174,7 +188,7 @@ class ContrastiveNLPEngine:
         d_scores = self.util.cos_sim(chunk_embeddings, self.disaster_matrix)
         s_scores = self.util.cos_sim(chunk_embeddings, self.safe_matrix)
         margin = float(np.max(d_scores.cpu().numpy())) - float(np.max(s_scores.cpu().numpy()))
-        if margin >= self.noise_floor: return 0.0
+        if margin <= self.noise_floor: return 0.0
         return float(min(1.0, margin * self.calibration_multiplier))
 
 class CARFFilter:
@@ -188,10 +202,18 @@ class CARFFilter:
     def apply_filter(self, semantic_score: float, news_context: str, transport_mode: str) -> float:
         if semantic_score <= 0: return 0.0
         news_words = news_context.lower().split()
-        if transport_mode == "sea" and any(kw in news_words for kw in ["port", "vessel", "canal", "ocean", "maritime"]):
-            if not any(kw in news_words for kw in ["airport", "flight"]): return 0.0
-        if transport_mode == "air" and any(kw in news_words for kw in ["airport", "flight"]):
-            if not any(kw in news_words for kw in ["port", "vessel", "maritime"]): return 0.0
+        mode_keywords = self.relevance_map.get(transport_mode, [])
+        # If news contains keywords relevant to THIS mode, keep the score
+        if any(kw in news_words for kw in mode_keywords):
+            return semantic_score
+        # If news contains keywords for OTHER modes but not this one, zero it
+        other_keywords = []
+        for m, kws in self.relevance_map.items():
+            if m != transport_mode:
+                other_keywords.extend(kws)
+        if any(kw in news_words for kw in other_keywords):
+            return 0.0
+        # Generic threat with no mode-specific keywords -> pass through
         return semantic_score
 
     def max_pool_threats(self, scores: List[float]) -> float:

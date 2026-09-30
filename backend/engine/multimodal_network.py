@@ -121,6 +121,8 @@ def create_multimodal_network():
                 
                 G.add_edge(u_vnode, v_vnode, baseline_time=t, distance=round(dist, 1), 
                            transport_mode=mode, type="transit", cost=cost)
+                G.add_edge(v_vnode, u_vnode, baseline_time=t, distance=round(dist, 1), 
+                           transport_mode=mode, type="transit", cost=cost)
 
     # 4. Local Road Auto-wire (<200km)
     for i, h1 in enumerate(hubs):

@@ -193,7 +193,7 @@ export default function BenchmarkCharts({ onBack }) {
             <BarChart data={BENCHMARK_DATA.successRate} barSize={40}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
               <XAxis dataKey="name" tick={{ fill: '#8b9bb4', fontSize: 12 }} axisLine={false} />
-              <YAxis tick={{ fill: '#8b9bb4', fontSize: 12 }} axisLine={false} domain={[0, 40]} />
+              <YAxis tick={{ fill: '#8b9bb4', fontSize: 12 }} axisLine={false} domain={[0, 55]} />
               <Tooltip content={<CustomTooltip />} />
               <Bar dataKey="value" radius={[6, 6, 0, 0]}>
                 {BENCHMARK_DATA.successRate.map((entry, i) => (

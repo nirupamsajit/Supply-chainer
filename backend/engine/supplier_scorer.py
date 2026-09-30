@@ -27,7 +27,7 @@ class SupplierScorer:
         for s in filtered:
             # Deterministic Scoring Base
             # 1. Cost Score (0.3)
-            cost_score = 1.0 - (s['unit_cost'] / 1000.0) # Normalized to $1k cap for demo
+            cost_score = max(0.0, 1.0 - (s['unit_cost'] / 1000.0)) # Normalized to $1k cap for demo
             
             # 2. Lead Time Score (0.3)
             # Base lead time + disruption penalty

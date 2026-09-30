@@ -15,6 +15,7 @@ const RouteRecommender = ({ onNavigate }) => {
   const [operationalConfig, setOperationalConfig] = useState('NORMAL');
   const [cargoType, setCargoType] = useState('general');
   const [priority, setPriority] = useState('normal');
+  const [budgetSensitivity, setBudgetSensitivity] = useState('medium');
   const [recommendations, setRecommendations] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -45,6 +46,7 @@ const RouteRecommender = ({ onNavigate }) => {
           routing_policy: routingPolicy,
           cargo_type: cargoType,
           priority: priority,
+          budget_sensitivity: budgetSensitivity,
           scenario: operationalConfig !== 'NORMAL' ? operationalConfig : null
         })
       });
@@ -171,6 +173,34 @@ const RouteRecommender = ({ onNavigate }) => {
           <select value={routingPolicy} onChange={e => setRoutingPolicy(e.target.value)} className="sc-select">
             <option value="STRICT">STRICT (Hard Exclusion)</option>
             <option value="PREFERRED">PREFERRED (Soft Bias)</option>
+          </select>
+        </div>
+
+        <div className="sc-input-group">
+          <label className="sc-label">Priority Level</label>
+          <select value={priority} onChange={e => setPriority(e.target.value)} className="sc-select">
+            <option value="normal">NORMAL (Standard Schedule)</option>
+            <option value="urgent">URGENT (Time Critical)</option>
+            <option value="low">LOW (Cost Relaxed)</option>
+          </select>
+        </div>
+
+        <div className="sc-input-group">
+          <label className="sc-label">Cargo Classification</label>
+          <select value={cargoType} onChange={e => setCargoType(e.target.value)} className="sc-select">
+            <option value="general">GENERAL FREIGHT</option>
+            <option value="perishable_urgent">PERISHABLE (URGENT)</option>
+            <option value="hazardous_waste">HAZARDOUS</option>
+            <option value="oversize_heavy">OVERSIZE HEAVY</option>
+          </select>
+        </div>
+
+        <div className="sc-input-group">
+          <label className="sc-label">Budget Sensitivity</label>
+          <select value={budgetSensitivity} onChange={e => setBudgetSensitivity(e.target.value)} className="sc-select">
+            <option value="medium">MEDIUM (Balanced Economics)</option>
+            <option value="high">HIGH (Strict Cost Optimization)</option>
+            <option value="low">LOW (Velocity Over Cost)</option>
           </select>
         </div>
 
@@ -308,7 +338,7 @@ const RouteRecommender = ({ onNavigate }) => {
         <div style={{display: 'flex', gap: '3rem', flex: 1, justifyContent: 'center'}}>
           <div style={{display: 'flex', gap: '0.5rem', alignItems: 'center'}}>
             <span style={{fontSize: '0.7rem', fontWeight: 700, color: '#94a3b8'}}>OPTIMAL SPEED:</span>
-            <span style={{fontSize: '0.9rem', fontWeight: 800, color: '#f59e0b'}}>{recommendations[0]?.adjusted_eta || '--'}h</span>
+            <span style={{fontSize: '0.9rem', fontWeight: 800, color: '#f59e0b'}}>{recommendations.length > 0 ? Math.min(...recommendations.map(r => r.adjusted_eta)) : '--'}h</span>
           </div>
           <div style={{display: 'flex', gap: '0.5rem', alignItems: 'center'}}>
             <span style={{fontSize: '0.7rem', fontWeight: 700, color: '#94a3b8'}}>LOWEST COST:</span>

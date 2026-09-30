@@ -1,4 +1,4 @@
-from fastapi import FastAPI, WebSocket, Query
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Query
 from pydantic import BaseModel
 from typing import Optional, List
 import asyncio
@@ -138,6 +138,8 @@ async def websocket_endpoint(websocket: WebSocket):
             }
             await websocket.send_text(json.dumps(state))
             await asyncio.sleep(2.0)
+    except WebSocketDisconnect:
+        pass
     except Exception as e:
         print(f"WebSocket closed: {e}")
 
@@ -157,6 +159,7 @@ def recommend_routes(req: RecommendRequest):
         destination=req.destination,
         cargo_type=req.cargo_type,
         priority=req.priority,
+        budget_sensitivity=req.budget_sensitivity,
         transport_preference=req.transport_preference,
         routing_policy=req.routing_policy,
         scenario=req.scenario,
@@ -166,11 +169,10 @@ def recommend_routes(req: RecommendRequest):
 
 @app.post("/api/suppliers")
 def get_suppliers(req: SourcingRequest):
-    # Get active disruptions from scenario manager
+    # Get active disruptions from scenario manager (stateless)
     active_disruptions = {}
     if req.scenario:
-        scenario_mgr.activate_scenario(req.scenario)
-        active_disruptions = scenario_mgr.get_active_disruptions()
+        active_disruptions = scenario_mgr.get_active_disruptions(req.scenario)
     
     ranked_suppliers = supplier_scorer.get_ranked_suppliers(req.category, active_disruptions)
     advice = supplier_scorer.get_procurement_advice(req.current_inventory, req.safety_stock, req.demand_forecast)

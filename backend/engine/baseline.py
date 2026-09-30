@@ -19,8 +19,8 @@ class BaselineRouter:
                 u = route[i]
                 v = route[i+1]
                 edge_data = self.network.edges[u,v]
-                expected_time += edge_data["baseline_time"]
-                expected_cost += edge_data["baseline_cost"]
+                expected_time += edge_data.get("baseline_time", 0.0)
+                expected_cost += edge_data.get("baseline_cost", edge_data.get("cost", 0.0))
                 
             return {
                 "route": route,

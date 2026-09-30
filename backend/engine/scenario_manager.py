@@ -73,18 +73,20 @@ class ScenarioManager:
         self.active_scenario_id = None
         return None
 
-    def get_active_disruptions(self) -> Dict[str, Any]:
-        if not self.active_scenario_id:
+    def get_active_disruptions(self, scenario_id: Optional[str] = None) -> Dict[str, Any]:
+        target_id = scenario_id
+        if not target_id or target_id not in self.SCENARIOS:
             return {}
         
-        scenario = self.SCENARIOS[self.active_scenario_id]
+        scenario = self.SCENARIOS[target_id]
         disruptions = {}
         for node in scenario["affected_nodes"]:
             disruptions[node] = {
                 "delay": scenario["delay_hours"],
                 "threat": scenario["threat_level"],
                 "reason": scenario["reason"],
-                "source": "SCENARIO_OVERRIDE"
+                "source": "SCENARIO_OVERRIDE",
+                "mode": scenario.get("mode")
             }
         return disruptions
 

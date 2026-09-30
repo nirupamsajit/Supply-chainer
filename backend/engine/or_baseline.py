@@ -1,7 +1,10 @@
 import hashlib
 import networkx as nx
 from typing import Dict, Any
-from ortools.graph.python import min_cost_flow
+try:
+    from ortools.graph.python import min_cost_flow
+except ImportError:
+    min_cost_flow = None
 from .ml_predictor import DelayPredictor
 from .baseline import BaselineRouter
 
@@ -19,6 +22,9 @@ class OROptimizer:
         baseline_result = self.baseline_router.get_route(source, destination)
         if not baseline_result:
             return None
+
+        if min_cost_flow is None:
+            return baseline_result
 
         # Build OR-Tools SimpleMinCostFlow model
         smcf = min_cost_flow.SimpleMinCostFlow()
